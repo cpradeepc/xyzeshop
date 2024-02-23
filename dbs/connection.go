@@ -21,6 +21,7 @@ type dbManager struct {
 	cancel    context.CancelFunc
 }
 
+// signatures of regdUser,cart,address,varification,product
 type Manager interface {
 	InsertOne(interface{}, string) (interface{}, error)
 	GetSingleRecordByEmail(string, string) *payloads.Verification
@@ -36,7 +37,7 @@ type Manager interface {
 	GetSingleUserByUserId(primitive.ObjectID, string) payloads.RegdUser
 	UpdateUser(payloads.RegdUser, string) error
 	GetCartObjectById(primitive.ObjectID, string) (payloads.Cart, error)
-	UpdateCartToCheckout(payloads.Cart, string)
+	UpdateCartToCheckout(payloads.Cart, string) error
 }
 
 var Mgr Manager

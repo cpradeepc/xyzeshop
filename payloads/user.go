@@ -51,7 +51,7 @@ type RegdUserPostalAddress struct {
 //unregister user verification,"verification" table in db
 type Verification struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Email     string             `json:"email" bson:"_id"`
+	Email     string             `json:"email" bson:"email"`
 	OTP       int64              `json:"otp" bson:"otp"`
 	Status    bool               `json:"status" bson:"status"`
 	CreatedAt int64              `json:"created_at" bson:"created_at"`
