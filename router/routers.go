@@ -159,7 +159,7 @@ func (r routes) XyzAuthUser(g *gin.RouterGroup) {
 }
 
 // append routes with version
-func GustRoutes() {
+func GuestRoutes() {
 	r := routes{
 		router: gin.Default(),
 	}

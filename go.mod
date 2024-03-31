@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.9.1
+	github.com/joho/godotenv v1.5.1
 	github.com/sendgrid/sendgrid-go v3.14.0+incompatible
 	go.mongodb.org/mongo-driver v1.14.0
 	golang.org/x/crypto v0.17.0
