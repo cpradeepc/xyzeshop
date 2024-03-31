@@ -98,7 +98,7 @@ func (mgr *dbManager) SearchProduct(page int, limit int, offset int, search stri
 	return products, count, err
 
 }
-func (mgr *dbManager) GetSignleProductById(id primitive.ObjectID, collName string) (product payloads.Product, err error) {
+func (mgr *dbManager) GetSingleProductById(id primitive.ObjectID, collName string) (product payloads.Product, err error) {
 	filter := bson.D{primitive.E{Key: "_id", Value: id}}
 	coll := mgr.conection.Database(constval.DbName).Collection(collName)
 	err = coll.FindOne(context.TODO(), filter).Decode(&product)

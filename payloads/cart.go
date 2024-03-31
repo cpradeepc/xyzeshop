@@ -11,6 +11,6 @@ type Cart struct {
 }
 
 type CartUser struct {
-	UserID    primitive.ObjectID `json:"user_id" bson:"user_id"`
-	ProductID primitive.ObjectID `json:"product_id" bson:"product_id"`
+	UserID    string `json:"user_id" bson:"user_id"`
+	ProductID string `json:"product_id" bson:"product_id"`
 }

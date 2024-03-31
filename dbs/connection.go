@@ -30,7 +30,7 @@ type Manager interface {
 	GetSingleRecordByEmailForUser(string, string) payloads.RegdUser
 	GetListProduct(int, int, int, string) ([]payloads.Product, int64, error)
 	SearchProduct(int, int, int, string, string) ([]payloads.Product, int64, error)
-	GetSignleProductById(primitive.ObjectID, string) (payloads.Product, error)
+	GetSingleProductById(primitive.ObjectID, string) (payloads.Product, error)
 	UpdateProduct(payloads.Product, string) error
 	DeleteProduct(primitive.ObjectID, string) error
 	GetSingleAddress(primitive.ObjectID, string) (payloads.RegdUserAddress, error)
@@ -61,7 +61,7 @@ func ConDb() {
 		log.Println("Unable to connect to the database, Retrying...")
 		ConDb()
 	}
-	log.Println("succeed connection to database at %s", uri)
+	log.Printf("succeed connection to database at %s\n", uri)
 	//Mgr = &dbManager{conection: client, ctx: ctx, cancel: cancelFn}
 
 }

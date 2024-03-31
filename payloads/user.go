@@ -24,11 +24,11 @@ type RegdUser struct {
 
 //Regd. user update
 type RegdUserUpdate struct {
-	Id       primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Name     string             `json:"name" bson:"name"`
-	Email    string             `json:"email" bson:"email"`
-	Phone    string             `json:"phone" bson:"phone"`
-	Password string             `json:"password" bson:"password"`
+	Id       string `json:"id" bson:"id,omitempty"`
+	Name     string `json:"name" bson:"name"`
+	Email    string `json:"email" bson:"email"`
+	Phone    string `json:"phone" bson:"phone"`
+	Password string `json:"password" bson:"password"`
 }
 
 //Regd. user address,"addresses" table in db
@@ -42,10 +42,10 @@ type RegdUserAddress struct {
 
 //Regd. user address add new, update
 type RegdUserPostalAddress struct {
-	Address1 string             `json:"address_1" bson:"address_1"`
-	UserId   primitive.ObjectID `json:"user_id" bson:"user_id"`
-	City     string             `json:"city" bson:"city"`
-	Country  string             `json:"country" bson:"country"`
+	Address1 string `json:"address_1" bson:"address_1"`
+	UserId   string `json:"user_id" bson:"user_id"`
+	City     string `json:"city" bson:"city"`
+	Country  string `json:"country" bson:"country"`
 }
 
 //unregister user verification,"verification" table in db

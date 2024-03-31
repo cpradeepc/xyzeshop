@@ -33,13 +33,13 @@ const (
 )
 
 const (
-	GuestUser string = "guestuser"
+	GuestUser string = "user"
 	AdminUser string = "admin"
 )
 
 const (
 	//time slot for otp validation
-	OtpValidation int = 60
+	OtpValidation int64 = 60
 )
 
 // collection
