@@ -46,7 +46,7 @@ func init() {
 	log.Println("hassPsw :", hashPassword)
 	user := payloads.RegdUser{
 		Name:     "Admin",
-		Email:    "cpradeepc@zohomail.in",
+		Email:    "xxxxxx@xxxx.in",
 		Password: hashPassword,
 		UserType: constval.AdminUser,
 	}
@@ -87,25 +87,5 @@ func main() {
 		shutdown(sig)
 	}
 	log.Println("Server exiting")
-
-	// go func() {
-	// 	//service connection
-	// 	err := srv.ListenAndServe()
-	// 	if err != nil {
-	// 		log.Fatalf("error : %s\n", err)
-	// 	}
-	// }()
-	// <-done
-	// log.Println("Shutting down server...")
-
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	// defer cancel()
-	// err := srv.Shutdown(ctx)
-	// if err != nil {
-	// 	//log.Fatal("Server forced to shutdown: ", err)
-	// 	log.Fatal("Error while shutting down Server. Initiating force shutdown...", err)
-	// } else {
-	// 	log.Println("Server exiting")
-	// }
 
 }
