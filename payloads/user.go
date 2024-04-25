@@ -12,7 +12,7 @@ type GuestUser struct {
 
 //Regd. user
 type RegdUser struct {
-	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Id        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Name      string             `json:"name" bson:"name"`
 	Email     string             `json:"email" bson:"email"`
 	Phone     string             `json:"phone" bson:"phone"`
@@ -50,7 +50,7 @@ type RegdUserPostalAddress struct {
 
 //unregister user verification,"verification" table in db
 type Verification struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Email     string             `json:"email" bson:"email"`
 	OTP       int64              `json:"otp" bson:"otp"`
 	Status    bool               `json:"status" bson:"status"`

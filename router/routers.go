@@ -42,6 +42,7 @@ func CORSMiddleware() gin.HandlerFunc {
 func (r routes) XyzHealthCheck(g *gin.RouterGroup) {
 	orderRouteGrouping := g.Group("/xyz")
 	orderRouteGrouping.Use(CORSMiddleware())
+	log.Println("health check req", g)
 	for _, route := range healthCheckRoutes {
 		switch route.Method {
 		case "GET":
@@ -66,7 +67,7 @@ func (r routes) XyzHealthCheck(g *gin.RouterGroup) {
 func (r routes) XyzUser(g *gin.RouterGroup) {
 	orderRouteGrouping := g.Group("/xyz")
 	orderRouteGrouping.Use(CORSMiddleware())
-	for _, route := range healthCheckRoutes {
+	for _, route := range userRoutes {
 		switch route.Method {
 		case "GET":
 			orderRouteGrouping.GET(route.Pattern, route.HandlerFunc)
@@ -90,7 +91,7 @@ func (r routes) XyzUser(g *gin.RouterGroup) {
 func (r routes) XyzProduct(g *gin.RouterGroup) {
 	orderRouteGrouping := g.Group("/xyz")
 	orderRouteGrouping.Use(CORSMiddleware())
-	for _, route := range healthCheckRoutes {
+	for _, route := range productRoutes {
 		switch route.Method {
 		case "GET":
 			orderRouteGrouping.GET(route.Pattern, route.HandlerFunc)
@@ -114,7 +115,7 @@ func (r routes) XyzProduct(g *gin.RouterGroup) {
 func (r routes) XyzGlobalProductRoutes(g *gin.RouterGroup) {
 	orderRouteGrouping := g.Group("/xyz-product")
 	orderRouteGrouping.Use(CORSMiddleware())
-	for _, route := range healthCheckRoutes {
+	for _, route := range productGlobalRoutes {
 		switch route.Method {
 		case "GET":
 			orderRouteGrouping.GET(route.Pattern, route.HandlerFunc)
@@ -138,7 +139,7 @@ func (r routes) XyzGlobalProductRoutes(g *gin.RouterGroup) {
 func (r routes) XyzAuthUser(g *gin.RouterGroup) {
 	orderRouteGrouping := g.Group("/xyz")
 	orderRouteGrouping.Use(CORSMiddleware())
-	for _, route := range healthCheckRoutes {
+	for _, route := range userAuthRoutes {
 		switch route.Method {
 		case "GET":
 			orderRouteGrouping.GET(route.Pattern, route.HandlerFunc)
@@ -159,7 +160,7 @@ func (r routes) XyzAuthUser(g *gin.RouterGroup) {
 }
 
 // append routes with version
-func GuestRoutes() {
+func GuestRoutes() *gin.Engine {
 	r := routes{
 		router: gin.Default(),
 	}
@@ -177,4 +178,7 @@ func GuestRoutes() {
 	if err != nil {
 		log.Printf("server failed to run :%v\n", err)
 	}
+	//return gin engin instance to http.server and will work in shutdown
+	return r.router
+
 }

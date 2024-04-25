@@ -7,8 +7,8 @@ const (
 	//schedular constants value
 	HealthCheckRoutes string = "/health"
 	MDBuri            string = "localhost:27017"
-	DbName            string = "ecomshop"
-	Sender            string = ""
+	DbName            string = "xyzeshop"
+	Sender            string = "pradkumcha@gmail.com"
 
 	//email verification routes
 	VerifyEmailRoute string = "/verify_email"

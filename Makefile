@@ -4,13 +4,16 @@ GOTEST=go test
 
 
 # multi make  commands in all make command
-all: cls stop build_server 
-	./xyzeshop
-build_server:
+all:  stop  cls build
+	# ./xyzeshop.exe
+build:
 	$(GOBUILD) -v .
 cls:
 	rm -f ./xyzeshop
 stop:
-	pkil xyzeshop || true 
-test:
-	cd helper && $(GOTEST) -v .
+	 pkil -15 xyzeshop || true
+	# taskkill /IM xyzeshop.exe /F || true
+run:
+	./xyzeshop
+# test:
+# 	cd helper && $(GOTEST) -v .

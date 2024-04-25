@@ -1,9 +1,12 @@
 package helper
 
 import (
+	"context"
 	"errors"
 	"log"
+	"net/http"
 	"strconv"
+	"time"
 	"xyzeshop/payloads"
 
 	"golang.org/x/crypto/bcrypt"
@@ -39,7 +42,7 @@ func CheckUserValidation(user payloads.GuestUser) error {
 
 // generate password into hash
 func GenPassHash(pasStr string) string {
-	bts, err := bcrypt.GenerateFromPassword([]byte(pasStr), bcrypt.MaxCost) //cost (4 to 31)
+	bts, err := bcrypt.GenerateFromPassword([]byte(pasStr), 14) //cost (4 to 31)
 	if err != nil {
 		return ""
 	}
@@ -61,4 +64,17 @@ func CheckProductValidation(product payloads.ProductUser) error {
 		return errors.New("price can not be empty")
 	}
 	return nil
+}
+
+func GracefulShutdown(srv *http.Server) func(reason interface{}) {
+	return func(reason interface{}) {
+		log.Println("Server Shutdown:", reason)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Println("Error Gracefully Shutting Down API:", err)
+		}
+	}
 }

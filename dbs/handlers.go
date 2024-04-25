@@ -4,13 +4,90 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"time"
 	"xyzeshop/constval"
 	"xyzeshop/payloads"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
+
+type dbManager struct {
+	conection *mongo.Client
+	ctx       context.Context
+	cancel    context.CancelFunc
+}
+
+// signatures of regdUser,cart,address,varification,product
+type Manager interface {
+	InsertOne(data interface{}, collectionName string) (interface{}, error)
+	GetSingleRecordByEmail(string, string) (payloads.Verification, error)
+	UpdateVerification(payloads.Verification, string) error
+	UpdateEmailVerifiedStatus(payloads.Verification, string) error
+	GetSingleRecordByEmailForUser(string, string) payloads.RegdUser
+	GetListProduct(int, int, int, string) ([]payloads.Product, int64, error)
+	SearchProduct(int, int, int, string, string) ([]payloads.Product, int64, error)
+	GetSingleProductById(primitive.ObjectID, string) (payloads.Product, error)
+	UpdateProduct(payloads.Product, string) error
+	DeleteProduct(primitive.ObjectID, string) error
+	GetSingleAddress(primitive.ObjectID, string) (payloads.RegdUserAddress, error)
+	GetSingleUserByUserId(primitive.ObjectID, string) payloads.RegdUser
+	UpdateUser(payloads.RegdUser, string) error
+	GetCartObjectById(primitive.ObjectID, string) (payloads.Cart, error)
+	UpdateCartToCheckout(payloads.Cart, string) error
+}
+
+var Mgr Manager
+
+func ConDb() (clnt *mongo.Client, contx context.Context, cancelFunc context.CancelFunc) {
+	uri := os.Getenv("DB_HOST")
+	if uri == "" {
+		uri = constval.MDBuri
+		//uri = "host.docker.internal"
+	}
+	fmt.Println("db connection initializing")
+	uriAdr := fmt.Sprintf("%s%s", "mongodb://", uri)
+	opt := options.Client().ApplyURI(uriAdr)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	log.Println("cancel :", cancelFn)
+	client, err := mongo.Connect(ctx, opt)
+	if err != nil {
+		log.Println("Unable to initialize database connectors, Retrying...")
+		ConDb()
+	}
+
+	err = client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		log.Println("Unable to connect to the database, Retrying...")
+		ConDb()
+	}
+	log.Printf("succeed connection to database at %s\n", uri)
+	Mgr = &dbManager{conection: client, ctx: ctx, cancel: cancelFn}
+
+	return client, ctx, cancelFn
+}
+
+func CloseCon(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
+	//cancelFunc to cancel to context
+	defer cancel()
+
+	//client provides a method to close
+	//a mongoDB connection
+	defer func() {
+		//client.Disconnect method also has deadline.
+		//return err if any
+		err := client.Disconnect(ctx)
+		if err != nil {
+			log.Println("connection is being closed...")
+			panic(err)
+		}
+	}()
+
+}
 
 func (mgr *dbManager) InsertOne(data interface{}, collectionName string) (interface{}, error) {
 	log.Println("data: ", data)
@@ -23,16 +100,25 @@ func (mgr *dbManager) InsertOne(data interface{}, collectionName string) (interf
 	return result.InsertedID, nil
 }
 
-func (mgr *dbManager) GetSingleRecordByEmail(mail string, collName string) *payloads.Verification {
-	resp := &payloads.Verification{}
-	filter := bson.D{primitive.E{Key: "email", Value: mail}}
+func (mgr *dbManager) GetSingleRecordByEmail(mail string, collName string) (payloads.Verification, error) {
+	resp := payloads.Verification{}
+	//filter := bson.M{"email": mail}
+	// filter := bson.D{bson.E{"exists", "true"},
+	// 	{"email", "cpradeepc@zohomail.in"},
+	// }
 	coll := mgr.conection.Database(constval.DbName).Collection(collName)
-	err := coll.FindOne(context.TODO(), filter).Decode(resp)
+	fmt.Println("resp mail>> :", resp.Email)
+	fmt.Println("resp >> :", resp)
+	//var resp2 any
+	fmt.Println(">> 1")
+	err := coll.FindOne(context.TODO(), bson.M{"email": "cpradeepc@zohomail.in"}).Decode(&resp)
+	// err := coll.FindOne(context.TODO(), filter).Decode(&resp2)
+	//fmt.Println("resp2 :", resp)
 	if err != nil {
 		log.Println("error during finding :", err)
-		return nil
+		return resp, err
 	}
-	return resp
+	return resp, nil
 }
 
 func (mgr *dbManager) UpdateVerification(data payloads.Verification, collName string) error {
@@ -68,10 +154,14 @@ func (mgr *dbManager) GetListProduct(page int, limit int, offset int, collName s
 	findOpt := options.Find()
 	findOpt.SetSkip(int64(skip))
 	findOpt.SetLimit(int64(limit))
-	cur, err := coll.Find(context.TODO(), bson.M{}, findOpt)
-	err = cur.All(context.TODO(), &products)
-	itemCount, err := coll.CountDocuments(context.TODO(), bson.M{})
-	return products, itemCount, err
+	cur, er := coll.Find(context.TODO(), bson.M{}, findOpt)
+	er = cur.All(context.TODO(), &products)
+	if er != nil {
+		log.Println("error was invoked during find :", er)
+	}
+	log.Println("cursor: ", cur)
+	itemCount, er := coll.CountDocuments(context.TODO(), bson.M{})
+	return products, itemCount, er
 
 }
 func (mgr *dbManager) SearchProduct(page int, limit int, offset int, search string, collName string) (products []payloads.Product, count int64, err error) {
@@ -92,10 +182,14 @@ func (mgr *dbManager) SearchProduct(page int, limit int, offset int, search stri
 		}
 	}
 
-	cur, err := coll.Find(context.TODO(), searchFilter, findOpt)
-	cur.All(context.TODO(), &products)
-	count, err = coll.CountDocuments(context.TODO(), searchFilter)
-	return products, count, err
+	cur, er := coll.Find(context.TODO(), searchFilter, findOpt)
+	er = cur.All(context.TODO(), &products)
+	if er != nil {
+		log.Println("error was invoked during find :", er)
+	}
+	log.Println("cursor: ", cur, er)
+	count, er = coll.CountDocuments(context.TODO(), searchFilter)
+	return products, count, er
 
 }
 func (mgr *dbManager) GetSingleProductById(id primitive.ObjectID, collName string) (product payloads.Product, err error) {

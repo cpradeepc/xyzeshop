@@ -1,51 +1,76 @@
 package helper
 
 import (
+	"crypto/rand"
+	"crypto/tls"
 	"errors"
-	"math/rand"
+	"math/big"
+	_ "math/rand"
+
 	"os"
 	"strconv"
-	"time"
 	"xyzeshop/constval"
 	"xyzeshop/payloads"
 
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	gomail "gopkg.in/mail.v2"
 )
 
-func SendMailSendGrid(req payloads.Verification) (payloads.Verification, error) {
-	apiKey := os.Getenv("SENDGRID_API_KEY")
-	if apiKey == "" {
-		return req, errors.New("SENDGRID_API_KEY environment")
+func SendMailOtp(req payloads.Verification) (payloads.Verification, error) {
+	mailPassKey := os.Getenv("MAIL_PASSKEY")
+	if mailPassKey == "" {
+		return req, errors.New("error in mail passkey")
 	}
-	//create a sendGrid client
-	client := sendgrid.NewSendClient(apiKey)
 
-	//setup the email message
-	from := mail.NewEmail("Sender Name", constval.Sender)
-	to := mail.NewEmail("Recipient Name", req.Email)
-	subject := "OTP verification mail"
-	otp := RandomNum()
-	req.OTP = int64(otp)
-	htmlContent := "<p>This is a test otp for verification <strong>" + strconv.Itoa(otp) + "</strong></p>"
-	message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
+	msg := gomail.NewMessage()
 
-	//send the email message
-	_, err := client.Send(message)
+	//for sender
+	msg.SetHeader("From", constval.Sender)
+
+	//for receiver
+	msg.SetHeader("To", req.Email)
+
+	//for subject
+	msg.SetHeader("Subject", "Verify OTP")
+	otp, err := GenerateOTPCode(4)
+	if err != nil {
+		return req, errors.New("error in generate otp fn")
+	}
+	req.OTP, err = strconv.ParseInt(otp, 10, 64)
+	if err != nil {
+		return req, errors.New("error in parse otp fn")
+	}
+
+	//set mail body in html
+	//htmlContent := "<p>This is OTP for verification <strong>" + otp + "</strong></p>"
+	msg.SetBody("text/plain", "This is OTP for verification : "+otp)
+	mailHost := os.Getenv("SMTP_HOST")
+	mailPort, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	mailUser := os.Getenv("MAIL_USER")
+
+	dialer := gomail.NewDialer(mailHost, mailPort, mailUser, mailPassKey)
+
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(msg)
 	if err != nil {
 		return req, err
 	}
-	return req, err
+	return req, nil
 }
 
-// Create a new random number generator with a custom seed (e.g., current time)
-// source := rand.NewSource(time.Now().UnixNano())
-// rng := rand.New(source)
-// Generate a random number of minutes between 1 and 15
-// randomMinutes := rng.Intn(15) + 1
-func RandomNum() int {
-	randSource := rand.NewSource(time.Now().UnixNano())
-	rndRang := rand.New(randSource)
-	randNum := rndRang.Intn(1000) + 1000
-	return randNum
+func GenerateOTPCode(length int) (string, error) {
+	seed := "012345679"
+	byteSlice := make([]byte, length)
+
+	for i := 0; i < length; i++ {
+		max := big.NewInt(int64(len(seed)))
+		num, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			return "", err
+		}
+
+		byteSlice[i] = seed[num.Int64()]
+	}
+
+	return string(byteSlice), nil
 }

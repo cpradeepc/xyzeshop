@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: mongo
+    container_name: xyzmongo
+    ports:
+      - "27017:27017"
+    volumes: 
+      - '~/mongo/data:/data/db'      
+    networks:
+      - 'xyz_net1'
+
+  go_server:
+    build: ./
+    container_name: go_contianer
+    restart: on-failure
+    ports:
+      - "9095:9095"
+    networks:
+      - 'xyz_net1'
+    depends_on:
+      - "mongodb"
+networks:
+  xyz_net1:
+    driver: bridge
+
+

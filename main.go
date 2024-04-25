@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"xyzeshop/constval"
 	"xyzeshop/dbs"
 	"xyzeshop/helper"
@@ -10,37 +15,97 @@ import (
 	"xyzeshop/router"
 
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+//var srv *http.Server
+
+var (
+	client  *mongo.Client
+	contx   context.Context
+	contxFn context.CancelFunc
 )
 
 func init() {
-	if _, err := os.Stat(".env"); err == nil {
+	fs, err := os.Stat(".env")
+	log.Println("env file :", fs)
+	if err == nil {
 		log.Println("loading... config file")
 		err = godotenv.Load(".env")
 
 		if err != nil {
 			log.Println("error  was invoked during loading config file :", err)
 		}
+
 		log.Println("succeed load config...")
 	}
+	client, contx, contxFn = dbs.ConDb()
 
 	//creating system admin
 	hashPassword := helper.GenPassHash("1234")
+	log.Println("hassPsw :", hashPassword)
 	user := payloads.RegdUser{
 		Name:     "Admin",
-		Email:    "xxxx@xxxx.com",
+		Email:    "cpradeepc@zohomail.in",
 		Password: hashPassword,
 		UserType: constval.AdminUser,
 	}
 
-	userVarify := dbs.Mgr.GetSingleRecordByEmail(user.Email, constval.UserCollection)
-	if userVarify.Email == "" {
+	// log.Println("user data:", user)
+	userVarify, err := dbs.Mgr.GetSingleRecordByEmail(user.Email, constval.UserCollection)
+	if err != nil {
 		_, err := dbs.Mgr.InsertOne(user, constval.UserCollection)
 		if err != nil {
 			log.Fatal("error was invoked during insert record :", err)
 		}
 	}
+	log.Println("user verify :", userVarify)
+
+	log.Println("init fn done")
 }
 func main() {
-	//calling direct routes by function
-	router.GuestRoutes()
+	handler := router.GuestRoutes()
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
+		Handler: handler,
+	}
+	srvErr := make(chan error, 1)
+	go func() {
+		srvErr <- srv.ListenAndServe()
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	shutdown := helper.GracefulShutdown(srv)
+
+	select {
+	case err := <-srvErr:
+		shutdown(err)
+	case sig := <-quit:
+		//dbs.CloseCon(client, contx, contxFn)
+		shutdown(sig)
+	}
+	log.Println("Server exiting")
+
+	// go func() {
+	// 	//service connection
+	// 	err := srv.ListenAndServe()
+	// 	if err != nil {
+	// 		log.Fatalf("error : %s\n", err)
+	// 	}
+	// }()
+	// <-done
+	// log.Println("Shutting down server...")
+
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	// defer cancel()
+	// err := srv.Shutdown(ctx)
+	// if err != nil {
+	// 	//log.Fatal("Server forced to shutdown: ", err)
+	// 	log.Fatal("Error while shutting down Server. Initiating force shutdown...", err)
+	// } else {
+	// 	log.Println("Server exiting")
+	// }
+
 }

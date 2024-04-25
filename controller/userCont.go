@@ -31,13 +31,13 @@ func VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	resp := dbs.Mgr.GetSingleRecordByEmail(req.Email, constval.VerificationsCollection)
+	resp, _ := dbs.Mgr.GetSingleRecordByEmail(req.Email, constval.VerificationsCollection)
 	if resp.OTP != 0 {
 		sec := resp.CreatedAt + constval.OtpValidation
 
 		//check otp is expired
 		if sec < time.Now().Unix() {
-			reqMail, errMail := helper.SendMailSendGrid(req)
+			reqMail, errMail := helper.SendMailOtp(req)
 			if errMail != nil {
 				log.Println("error invoked during send mail :", errMail)
 				c.JSON(http.StatusBadRequest, gin.H{"error": true, "msg": constval.EmailValidationError})
@@ -54,7 +54,7 @@ func VerifyEmail(c *gin.Context) {
 			return
 		}
 	}
-	reqMail, errMail := helper.SendMailSendGrid(req)
+	reqMail, errMail := helper.SendMailOtp(req)
 	if errMail != nil {
 		log.Println("error invoked during send mail :", errMail)
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "msg": constval.EmailValidationError})
@@ -90,7 +90,7 @@ func VerifyOtp(c *gin.Context) {
 	}
 
 	//checking record in verification collection
-	resp := dbs.Mgr.GetSingleRecordByEmail(req.Email, constval.VerificationsCollection)
+	resp, _ := dbs.Mgr.GetSingleRecordByEmail(req.Email, constval.VerificationsCollection)
 
 	//if status or email is already verified
 	if resp.Status {
@@ -143,7 +143,7 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	//verify email
-	resp := dbs.Mgr.GetSingleRecordByEmail(guest.Email, constval.VerificationsCollection)
+	resp, _ := dbs.Mgr.GetSingleRecordByEmail(guest.Email, constval.VerificationsCollection)
 	if !resp.Status {
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "msg": constval.EmailIsNotVerified})
 		return
@@ -244,7 +244,7 @@ func AddCart(c *gin.Context) {
 		return
 	}
 
-	userDbResp := dbs.Mgr.GetSingleRecordByEmail(email.(string), constval.UserCollection)
+	userDbResp, _ := dbs.Mgr.GetSingleRecordByEmail(email.(string), constval.UserCollection)
 	if userDbResp.Email == "" {
 		log.Println("error was invoked due to empty mail :", userDbResp.Email)
 		c.JSON(http.StatusBadRequest, gin.H{"error": true, "msg": constval.EmailIsNotVerified})
