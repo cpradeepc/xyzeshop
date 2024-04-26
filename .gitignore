@@ -1,7 +1,3 @@
-# Ignore
 *.txt
+oldk8/
 *.sh
-k8dir/yaml
-
-# Allow
-.env
