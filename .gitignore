@@ -1,4 +1,4 @@
 *.txt
-.env
+
 *.sh
-k8dir
+k8dir/yaml

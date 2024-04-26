@@ -46,7 +46,7 @@ func init() {
 	log.Println("hassPsw :", hashPassword)
 	user := payloads.RegdUser{
 		Name:     "Admin",
-		Email:    "xxxxxx@xxxx.in",
+		Email:    "xxxx@xxxx.in",
 		Password: hashPassword,
 		UserType: constval.AdminUser,
 	}
