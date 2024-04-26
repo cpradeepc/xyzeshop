@@ -1,4 +1,7 @@
+# Ignore
 *.txt
-
 *.sh
 k8dir/yaml
+
+# Allow
+.env
