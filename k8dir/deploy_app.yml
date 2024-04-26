@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-api-app
+spec:
+  selector:
+    matchLabels:
+      app: api-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: api-app
+    spec:
+      containers:
+        - name: xyz-app
+          image: pkchandra/xyz_onepod:01
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 9000
+
+        - name: xyzmongo
+          image: mongo:latest
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 9002

@@ -1,0 +1,35 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:    
+   name: xyz-app
+  spec:     
+    replicas: 2
+    selector: 
+      matchLabels:
+       app: xyzapi     
+    template:
+      metadata:
+        labels: 
+          app: xyzapi
+      spec: 
+       containers:
+       - name: xyzapi
+         image: pkchandra/xyz_eshop:01         
+       - name: xyzmongo
+         image: mongo
+
+
+---
+  apiVersion: v1
+  kind: Service   
+  metadata:
+    name: service-xyz-app
+  spec:
+    ports:
+      - name: http
+        port: 9095  #expose port
+        targetPort: 9095  #app default port
+    selector:
+        app: xyzapi 
+    type: LoadBalancer
+
