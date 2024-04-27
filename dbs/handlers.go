@@ -44,9 +44,14 @@ type Manager interface {
 var Mgr Manager
 
 func ConDb() (clnt *mongo.Client, contx context.Context, cancelFunc context.CancelFunc) {
-	uri := os.Getenv("DB_HOST")
-	if uri == "" {
-		uri = constval.MDBuri
+	// uri := os.Getenv("DB_HOST")
+	var uri string
+	uriH := os.Getenv("DB_HOST")
+	uriP := os.Getenv("DB_PORT")
+	uri = fmt.Sprintf("%s%s%s", uriH, ":", uriP)
+
+	if uriP == "" || uriH == "" {
+		uri = fmt.Sprintf("%s%s%s", constval.MDBhost, ":", constval.MDBport)
 		//uri = "host.docker.internal"
 	}
 	fmt.Println("db connection initializing")

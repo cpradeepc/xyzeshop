@@ -44,9 +44,10 @@ func init() {
 	//creating system admin
 	hashPassword := helper.GenPassHash("1234")
 	log.Println("hassPsw :", hashPassword)
+	mailId := os.Getenv("MAIL_USER")
 	user := payloads.RegdUser{
 		Name:     "Admin",
-		Email:    "xxxx@xxxx.in",
+		Email:    mailId,
 		Password: hashPassword,
 		UserType: constval.AdminUser,
 	}

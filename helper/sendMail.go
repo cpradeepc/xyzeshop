@@ -9,7 +9,6 @@ import (
 
 	"os"
 	"strconv"
-	"xyzeshop/constval"
 	"xyzeshop/payloads"
 
 	gomail "gopkg.in/mail.v2"
@@ -24,7 +23,7 @@ func SendMailOtp(req payloads.Verification) (payloads.Verification, error) {
 	msg := gomail.NewMessage()
 
 	//for sender
-	msg.SetHeader("From", constval.Sender)
+	msg.SetHeader("From", os.Getenv("MAIL_USER"))
 
 	//for receiver
 	msg.SetHeader("To", req.Email)

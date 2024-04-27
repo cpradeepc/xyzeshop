@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-xyz-app
+spec:
+  selector:
+    matchLabels:
+      app: xyz-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: xyz-app
+    spec:
+      containers:
+        - name: xyz-app-cont
+          image: pkchandra/xyz_eshop_mulpod:01
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: cont-map-file
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: cont-map-file
+                  key: DB_PORT
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "500m"
+          
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-xyz-app
+spec:
+  ports:
+    - name: http
+      port: 9095
+      targetPort: 9095
+  selector:
+    app: xyz-app
+  type: LoadBalancer
